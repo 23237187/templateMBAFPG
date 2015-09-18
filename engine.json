@@ -1,0 +1,19 @@
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "zte.MBA.fpg.VanillaEngine",
+  "datasource": {
+    "params" : {
+      "appName": "ZTE_MBA"
+    }
+  },
+  "algorithms": [
+    {
+      "name": "algo",
+      "params": {
+        "minsupport" : 0.2,
+        "numPartition" : 10
+      }
+    }
+  ]
+}
