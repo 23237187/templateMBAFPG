@@ -3,7 +3,8 @@ package zte.MBA.fpg
 import grizzled.slf4j.Logger
 import io.prediction.controller.{P2LAlgorithm, Params}
 import org.apache.spark.SparkContext
-import org.apache.spark.mllib.fpm.{FPGrowth, FPGrowthModel}
+import org.apache.spark.mllib.fpm.{AssociationRules, FPGrowth}
+import org.apache.spark.rdd.RDD
 
 case class AlgorithmParams(
   minsupport: Double,
@@ -25,13 +26,14 @@ class Algorithm(val ap: AlgorithmParams)
     val fpg = new FPGrowth()
       .setMinSupport(ap.minsupport)
       .setNumPartitions(ap.numPartition)
-    val model = fpg.run(data.actionWindows)
+    val model = fpg.run(data.actionWindows.cache())
     val minConfidence = 0.1
+
     model.generateAssociationRules(minConfidence).map { rule =>
         rule.antecedent.mkString("[", ",", "]") + " => " + rule.consequent.mkString("[", ",", "]") + ", " + rule.confidence
-    }.coalesce(1).saveAsTextFile("/ZTE_Demo/FPG_result")
+    }.coalesce(1).saveAsTextFile("/ZTE_Demo/haha")
 
-    Model(model)
+    Model(model.generateAssociationRules(minConfidence))
 
   }
 
@@ -43,6 +45,6 @@ class Algorithm(val ap: AlgorithmParams)
 }
 
 case class Model(
-  fpg: FPGrowthModel[String]
+  fpg: RDD[AssociationRules.Rule[String]]
   ) extends Serializable {
 }

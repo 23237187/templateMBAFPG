@@ -11,8 +11,8 @@
     {
       "name": "algo",
       "params": {
-        "minsupport" : 0.2,
-        "numPartition" : 10
+        "minsupport" : 0.0001,
+        "numPartition" : 2
       }
     }
   ]

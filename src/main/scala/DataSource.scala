@@ -18,19 +18,30 @@ class DataSource(val dsp: DataSourceParams)
   def readTraining(sc: SparkContext): TrainingData = {
 
     // read all events of EVENT involving ENTITY_TYPE and TARGET_ENTITY_TYPE
-    val actionsRDD: RDD[ActionDataTuple] = PEventStore.find(
+    val actionsRDD: RDD[List[ActionDataTuple]] = PEventStore.find(
       appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(List("3")))(sc)
-    .map({ event =>
+    .map{ event =>
       ActionDataTuple(
         usr_id = event.entityId.toInt,
         app_id = event.targetEntityId.get,
         time_stamp = event.eventTime.getMillis
       )
-    }).sortBy({ action =>
-      action.time_stamp
-    })
+    }
+    .map { actionData =>
+      (actionData.usr_id, actionData)
+    }
+    .groupByKey()
+    .mapValues { userActionsTuples =>
+      userActionsTuples.toList.sortBy { action =>
+        action.time_stamp
+      }
+    }
+    .values
+
+
+//    actionsRDD.coalesce(1).saveAsTextFile("/ZTE_DEMO/WOW")
 
 
     new TrainingData(actionsRDD)
@@ -44,6 +55,6 @@ case class ActionDataTuple(
   )
 
 class TrainingData(
-  val actions: RDD[ActionDataTuple]
+  val actions: RDD[List[ActionDataTuple]]
 ) extends Serializable {
 }
