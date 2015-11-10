@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
 class Preparator
   extends PPreparator[TrainingData, PreparedData] {
 
-  def sampleWindowData[T](iter: Iterator[List[ActionDataTuple]]) : Iterator[List[String]] = {
+  def sampleWindowData(iter: Iterator[List[ActionDataTuple]]) : Iterator[List[String]] = {
     var actionWindowsList = List[List[String]]()
     var actionList = List[String]()
 
@@ -18,54 +18,23 @@ class Preparator
 
       var usr_list = iter.next
       var windowStart = usr_list(0).time_stamp
-      //    println(windowStart)
       var windowEnd = windowStart + 30 * 60 * 1000
-      //    println(windowEnd)
-      //    println("Entering samplewindow phase")
       usr_list.tail.map { currentActionTuple =>
         val currentAppId = currentActionTuple.app_id
         val time_stamp = currentActionTuple.time_stamp
         if (time_stamp <= windowEnd) {
-          //        println(currentAppId)
-          //        actionList.::(currentAppId)
-          //        println(actionList)
           actionList = currentAppId :: actionList
-          //        println(actionList)
         } else if ((time_stamp - windowEnd) <= 3 * 60 * 1000) {
           actionList.::(currentAppId)
           windowEnd = time_stamp
         } else {
           windowStart = time_stamp
           windowEnd = windowStart + 30 * 60 * 1000
-          //        actionWindowsList.::(actionList)
-//          println(actionWindowsList)
           actionWindowsList = actionList :: actionWindowsList
           actionList = List[String]()
         }
       }
-//      while (iter.hasNext) {
-//        val currentActionTuple = iter.next
-//        val currentAppId = currentActionTuple.app_id
-//        val time_stamp = currentActionTuple.time_stamp
-//
-//        if (time_stamp <= windowEnd) {
-//          //        println(currentAppId)
-//          //        actionList.::(currentAppId)
-//          //        println(actionList)
-//          actionList = currentAppId :: actionList
-//          //        println(actionList)
-//        } else if ((time_stamp - windowEnd) <= 3 * 60 * 1000) {
-//          actionList.::(currentAppId)
-//          windowEnd = time_stamp
-//        } else {
-//          windowStart = time_stamp
-//          windowEnd = windowStart + 30 * 60 * 1000
-//          //        actionWindowsList.::(actionList)
-//          //        println(actionWindowsList)
-//          actionWindowsList = actionList :: actionWindowsList
-//          actionList = List[String]()
-//        }
-//      }
+
 
     }
     actionWindowsList.iterator
@@ -84,7 +53,7 @@ class Preparator
       distictedActionWindow.toArray
     }
 
-    println(windowedRDD.count())
+//    println(windowedRDD.count())
 
 //    windowedRDD.coalesce(1).saveAsTextFile("/ZTE_DEMO/WOW2")
 
